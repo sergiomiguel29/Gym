@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login Gimnasio</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background: url("img/FondoGym.jpg.jpeg") no-repeat center center/cover;
+}
+
+.login-box{
+    width:380px;
+    padding:40px;
+    background: rgba(0,0,0,0.75);
+    border-radius:15px;
+    box-shadow:0 0 20px rgba(0,0,0,0.5);
+    text-align:center;
+}
+
+.login-box h1{
+    color:#fff;
+    margin-bottom:10px;
+    font-size:32px;
+}
+
+.login-box p{
+    color:#ccc;
+    margin-bottom:30px;
+    font-size:14px;
+}
+
+.input-box{
+    margin-bottom:20px;
+}
+
+.input-box input{
+    width:100%;
+    padding:14px;
+    border:none;
+    outline:none;
+    border-radius:8px;
+    font-size:16px;
+}
+
+.input-box input::placeholder{
+    color:#666;
+}
+
+.btn-login{
+    width:100%;
+    padding:14px;
+    background:#f1c40f;
+    color:#000;
+    border:none;
+    border-radius:8px;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.btn-login:hover{
+    background:#ffd700;
+}
+
+.extra{
+    margin-top:20px;
+    color:#fff;
+    font-size:14px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="login-box">
+    <h1>GYM</h1>
+    <p>Iniciar Sesión</p>
+
+    <div class="input-box">
+        <input type="text" id="usuario" placeholder="Usuario">
+    </div>
+
+    <div class="input-box">
+        <input type="password" id="clave" placeholder="Contraseña">
+    </div>
+
+    <button class="btn-login" onclick="login()">INGRESAR</button>
+
+    <div class="extra">
+        ¿Olvidaste tu contraseña?
+    </div>
+</div>
+
+<script>
+function login() {
+
+let usuario = document.getElementById("usuario").value;
+let clave = document.getElementById("clave").value;
+
+if(usuario === "admin" && clave === "1234"){
+    alert("Bienvenido");
+} else {
+    alert("Usuario o contraseña incorrecta");
+}
+
+}
+</script>
+
+</body>
+</html>
