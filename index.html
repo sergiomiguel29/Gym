@@ -1,23 +1,30 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gym Pro</title>
+
+<title>DEVIOZ | GYM PRO BI</title>
+
 <link rel="stylesheet" href="style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 
 <body>
 
 <!-- LOGIN -->
 <div id="login">
-
     <div class="login-box">
-        <h1>GYM</h1>
-        <p>Iniciar Sesión</p>
+        <img class="login-logo" src="img/logo-devioz.png" alt="Logo Devioz">
+        <h1>GYM PRO</h1>
+        <p>Business Intelligence Dashboard</p>
 
         <div class="input-box">
-            <input type="text" id="usuario" placeholder="Usuario">
+            <input type="email" id="usuario" placeholder="Correo electrónico">
         </div>
 
         <div class="input-box">
@@ -26,32 +33,116 @@
 
         <button class="btn-login" onclick="login()">INGRESAR</button>
 
-        <div class="extra">
-            ¿Olvidaste tu contraseña?
-        </div>
-    </div>
+        <br><br>
 
+        <button class="btn-login" onclick="mostrarRegistro()">CREAR CUENTA</button>
+
+        <br><br>
+
+        <a href="#" onclick="mostrarRecuperacion()">
+            ¿Olvidaste tu contraseña?
+        </a>
+    </div>
+</div>
+
+<!-- REGISTRO -->
+<div id="registro" style="display:none;">
+    <div class="login-box">
+        <img class="login-logo login-logo-small" src="img/logo-devioz.png" alt="Logo Devioz">
+        <h1>Crear Cuenta</h1>
+
+        <div class="input-box">
+            <input type="text" id="reg_nombre" placeholder="Nombre completo">
+        </div>
+
+        <div class="input-box">
+            <input type="email" id="reg_correo" placeholder="Correo electrónico">
+        </div>
+
+        <div class="input-box">
+            <input type="password" id="reg_clave" placeholder="Contraseña">
+        </div>
+
+        <button class="btn-login" onclick="registrarUsuario()">REGISTRAR</button>
+
+        <br><br>
+
+        <button class="btn-login" onclick="volverLogin()">VOLVER</button>
+    </div>
+</div>
+
+<!-- VERIFICACION -->
+<div id="verificacion" style="display:none;">
+    <div class="login-box">
+        <img class="login-logo login-logo-small" src="img/logo-devioz.png" alt="Logo Devioz">
+        <h1>Verificar Cuenta</h1>
+
+        <div class="input-box">
+            <input type="email" id="ver_correo" placeholder="Correo electrónico">
+        </div>
+
+        <div class="input-box">
+            <input type="text" id="ver_codigo" placeholder="Código recibido">
+        </div>
+
+        <button class="btn-login" onclick="verificarCuenta()">VERIFICAR</button>
+
+        <br><br>
+
+        <button class="btn-login" onclick="volverLogin()">VOLVER</button>
+    </div>
+</div>
+
+<!-- RECUPERACION -->
+<div id="recuperacion" style="display:none;">
+    <div class="login-box">
+        <img class="login-logo login-logo-small" src="img/logo-devioz.png" alt="Logo Devioz">
+        <h1>Recuperar Contraseña</h1>
+
+        <div class="input-box">
+            <input type="email" id="rec_correo" placeholder="Correo electrónico">
+        </div>
+
+        <button class="btn-login" onclick="enviarRecuperacion()">ENVIAR CÓDIGO</button>
+
+        <br><br>
+
+        <div class="input-box">
+            <input type="text" id="rec_codigo" placeholder="Código recibido">
+        </div>
+
+        <div class="input-box">
+            <input type="password" id="rec_clave" placeholder="Nueva contraseña">
+        </div>
+
+        <button class="btn-login" onclick="cambiarPassword()">CAMBIAR CONTRASEÑA</button>
+
+        <br><br>
+
+        <button class="btn-login" onclick="volverLogin()">VOLVER</button>
+    </div>
 </div>
 
 <!-- PANEL -->
-<div id="panel" style="display: none;">
-
+<div id="panel" style="display:none;">
     <div class="sidebar">
-        <h2>GYM PRO</h2>
+        <div class="sidebar-brand">
+            <img src="img/logo-devioz.png" alt="Logo Devioz">
+            <h2>GYM PRO</h2>
+        </div>
 
         <button onclick="dashboard()">Dashboard</button>
         <button onclick="clientes()">Clientes</button>
-        <button onclick="reportes()">Reportes</button>
+        <button onclick="reportes()">Reportes BI</button>
         <button onclick="cerrar()">Cerrar Sesión</button>
     </div>
 
     <div class="content" id="contenido">
-        <h1>Bienvenido</h1>
+        <!-- Aquí se cargará el contenido dinámicamente -->
     </div>
-
 </div>
 
-<script src="Script.js"></script>
+<script src="Script.js?v=20260623-2"></script>
 
 </body>
 </html>
