@@ -680,6 +680,51 @@ th{
     align-items:center;
 }
 
+.import-card p{
+    margin-bottom:14px;
+}
+
+.import-row{
+    display:grid;
+    grid-template-columns:1fr auto auto;
+    gap:12px;
+    align-items:center;
+}
+
+.import-row input[type="file"]{
+    margin:0;
+    padding:12px 14px;
+    background:#f8fafc;
+}
+
+.import-result{
+    margin-top:16px;
+}
+
+.import-ok,
+.import-error{
+    padding:14px 16px;
+    border-radius:12px;
+    font-size:14px;
+}
+
+.import-ok{
+    background:#ecfdf5;
+    color:#14532d;
+    border:1px solid #bbf7d0;
+}
+
+.import-error{
+    background:#fef2f2;
+    color:#7f1d1d;
+    border:1px solid #fecaca;
+}
+
+.import-result ul{
+    margin:10px 0 0 18px;
+    color:inherit;
+}
+
 .accion-inline{
     margin-top:0;
     min-width:110px;
@@ -879,6 +924,7 @@ th{
 
 @media(max-width:700px){
     .search-row,
+    .import-row,
     .rutina-grid-form{
         grid-template-columns:1fr;
     }

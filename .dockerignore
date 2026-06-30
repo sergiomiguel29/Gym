@@ -1,0 +1,7 @@
+.git
+.env
+backup_modular_20260629_213130
+*.zip
+*.log
+Thumbs.db
+.DS_Store
