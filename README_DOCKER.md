@@ -37,6 +37,32 @@ Levantar el sistema:
 docker compose up -d --build
 ```
 
+## Instalacion usando Docker Hub
+
+Imagen publicada:
+
+```text
+https://hub.docker.com/r/sergio0129/gym-web
+```
+
+Tambien se puede levantar usando la imagen publicada en Docker Hub:
+
+```bash
+git clone https://github.com/sergiomiguel29/Gym.git
+cd Gym
+cp .env.example .env
+docker compose -f docker-compose.hub.yml up -d
+```
+
+En Windows PowerShell:
+
+```powershell
+git clone https://github.com/sergiomiguel29/Gym.git
+cd Gym
+Copy-Item .env.example .env
+docker compose -f docker-compose.hub.yml up -d
+```
+
 Abrir en el navegador:
 
 ```text
