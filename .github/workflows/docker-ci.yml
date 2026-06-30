@@ -1,0 +1,57 @@
+name: Docker CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  docker-build-test:
+    name: Build and test Docker app
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create environment file
+        run: |
+          cat > .env <<'EOF'
+          DB_HOST=db
+          DB_PORT=3306
+          DB_NAME=gimnasio
+          DB_USER=gym_user
+          DB_PASSWORD=gym_password
+          MYSQL_ROOT_PASSWORD=root_password
+          EOF
+
+      - name: Validate Docker Compose file
+        run: docker compose config
+
+      - name: Build and start containers
+        run: docker compose up -d --build
+
+      - name: Wait for web application
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://localhost:8080 > /dev/null; then
+              echo "Web application is responding."
+              exit 0
+            fi
+            echo "Waiting for web application... $i/30"
+            sleep 3
+          done
+          docker compose ps
+          docker compose logs web
+          docker compose logs db
+          exit 1
+
+      - name: Test database endpoint
+        run: curl -fsS "http://localhost:8080/php/clientes.php?accion=listar"
+
+      - name: Stop containers
+        if: always()
+        run: docker compose down -v

@@ -1,17 +1,37 @@
-# Ejecución con Docker
+# Proyecto Gimnasio con Docker
 
-Este proyecto puede ejecutarse con Docker para evitar configurar XAMPP manualmente en cada laptop.
+Este proyecto puede ejecutarse con Docker para evitar configurar XAMPP y MySQL manualmente en cada laptop.
 
 ## Requisitos
 
 - Docker Desktop instalado.
+- Git instalado.
 - Puertos libres:
-  - `8080` para la web.
+  - `8080` para la aplicacion web.
   - `3307` para MySQL.
 
-## Levantar el sistema
+## Instalacion en otra PC
 
-Desde la carpeta del proyecto:
+Clonar el repositorio:
+
+```bash
+git clone https://github.com/sergiomiguel29/Gym.git
+cd Gym
+```
+
+Crear el archivo `.env` desde el ejemplo:
+
+```bash
+cp .env.example .env
+```
+
+En Windows PowerShell tambien se puede usar:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Levantar el sistema:
 
 ```bash
 docker compose up -d --build
@@ -25,13 +45,13 @@ http://localhost:8080
 
 ## Base de datos
 
-Docker crea automáticamente la base `gimnasio` y sus tablas desde:
+Docker crea automaticamente la base `gimnasio` y sus tablas desde:
 
 ```text
 database/init.sql
 ```
 
-Tablas creadas:
+Tablas principales:
 
 - `usuarios`
 - `clientes`
@@ -40,13 +60,7 @@ Tablas creadas:
 
 ## Variables de entorno
 
-La configuración está en:
-
-```text
-.env
-```
-
-Ejemplo:
+El archivo `.env` contiene la configuracion de conexion:
 
 ```env
 DB_HOST=db
@@ -56,6 +70,22 @@ DB_USER=gym_user
 DB_PASSWORD=gym_password
 MYSQL_ROOT_PASSWORD=root_password
 ```
+
+## Pipeline DevOps
+
+El proyecto incluye un pipeline con GitHub Actions en:
+
+```text
+.github/workflows/docker-ci.yml
+```
+
+El pipeline se ejecuta automaticamente cuando se suben cambios a la rama `main` y valida:
+
+- Configuracion de Docker Compose.
+- Construccion de la imagen Docker.
+- Arranque de los contenedores web y base de datos.
+- Respuesta de la aplicacion en `http://localhost:8080`.
+- Conexion basica con el endpoint de clientes.
 
 ## Detener el sistema
 
