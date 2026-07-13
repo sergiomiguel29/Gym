@@ -24,7 +24,19 @@ if ($accion === 'guardar') {
 }
 
 if ($accion === 'listar') {
-    $result = $conn->query('SELECT id, nombre, correo, telefono FROM clientes ORDER BY id DESC');
+    $result = $conn->query(
+        'SELECT
+            c.id,
+            c.nombre,
+            c.correo,
+            c.telefono,
+            COUNT(m.id) AS total_mediciones,
+            MAX(m.fecha) AS ultima_medicion
+         FROM clientes c
+         LEFT JOIN mediciones m ON m.cliente_id = c.id
+         GROUP BY c.id, c.nombre, c.correo, c.telefono
+         ORDER BY c.id DESC'
+    );
     $clientes = [];
 
     while ($row = $result->fetch_assoc()) {
@@ -33,6 +45,8 @@ if ($accion === 'listar') {
             'nombre' => $row['nombre'],
             'correo' => $row['correo'],
             'telefono' => $row['telefono'],
+            'total_mediciones' => (int) $row['total_mediciones'],
+            'ultima_medicion' => $row['ultima_medicion'],
         ];
     }
 

@@ -62,15 +62,14 @@
         <section id="subClientesControl" class="subclientes-section">
             <div class="card">
                 <h2>Control físico y progreso</h2>
-                <p class="muted">Selecciona un cliente de la lista y usa el botón <strong>Ficha</strong> para registrar mediciones, ver antes vs actual e imprimir su seguimiento.</p>
-                <div class="quick-guide-grid">
-                    <div><strong>1. Cliente</strong><span>Primero registra o busca al cliente.</span></div>
-                    <div><strong>2. Ficha</strong><span>Abre su control físico desde la tabla.</span></div>
-                    <div><strong>3. Medición</strong><span>Guarda peso, cintura y medidas por fecha.</span></div>
-                    <div><strong>4. Progreso</strong><span>El sistema compara inicio vs actual.</span></div>
+                <p class="muted">Busca un cliente y abre directamente su ficha de progreso corporal.</p>
+                <div class="search-row">
+                    <input type="text" id="buscarControlFisico" placeholder="Buscar cliente para control físico" onkeydown="buscarControlFisicoEnter(event)" oninput="renderControlFisico()">
+                    <button class="accion accion-inline" onclick="renderControlFisico()">Buscar</button>
+                    <button class="accion accion-secundaria accion-inline" onclick="limpiarBusquedaControlFisico()">Limpiar</button>
                 </div>
-                <button class="accion" onclick="mostrarSubmenuClientes('lista')">Ir a lista de clientes</button>
             </div>
+            <div id="panelControlFisico"></div>
         </section>
 
         <div id="modalEditarCliente" class="modal-overlay" style="display:none;">
@@ -117,12 +116,14 @@ function mostrarSubmenuClientes(seccion, boton = null) {
 
     if (boton) {
         boton.classList.add('activo');
+        if (seccion === 'control') renderControlFisico();
         return;
     }
 
     const orden = ['lista', 'registro', 'importar', 'control'];
     const index = orden.indexOf(seccion);
     document.querySelectorAll('.submenu-clientes .submenu-btn')[index]?.classList.add('activo');
+    if (seccion === 'control') renderControlFisico();
 }
 async function guardarCliente() {
     const nombre = document.getElementById('cliNombre').value.trim();
@@ -202,6 +203,7 @@ async function cargarClientes() {
 
     clientesCache = data.data;
     renderClientes();
+    renderControlFisico();
 }
 
 function buscarConEnter(event) {
@@ -215,6 +217,77 @@ function buscarCliente() {
 function limpiarBusqueda() {
     document.getElementById('buscarCliente').value = '';
     renderClientes();
+}
+
+function buscarControlFisicoEnter(event) {
+    if (event.key === 'Enter') renderControlFisico();
+}
+
+function limpiarBusquedaControlFisico() {
+    const input = document.getElementById('buscarControlFisico');
+    if (input) input.value = '';
+    renderControlFisico();
+}
+
+function renderControlFisico() {
+    const panel = document.getElementById('panelControlFisico');
+    if (!panel) return;
+
+    const filtro = (document.getElementById('buscarControlFisico')?.value || '').toLowerCase();
+    const clientesFiltrados = clientesCache.filter((cliente) => {
+        return `${cliente.nombre} ${cliente.correo} ${cliente.telefono}`.toLowerCase().includes(filtro);
+    });
+
+    const totalClientes = clientesCache.length;
+    const conMediciones = clientesCache.filter((cliente) => Number(cliente.total_mediciones) > 0).length;
+    const sinMediciones = totalClientes - conMediciones;
+
+    if (!clientesFiltrados.length) {
+        panel.innerHTML = `
+            <div class="card">
+                <h2>Clientes en control físico</h2>
+                <p>No se encontraron clientes con ese filtro.</p>
+                <button class="accion" onclick="mostrarSubmenuClientes('registro')">Registrar nuevo cliente</button>
+            </div>
+        `;
+        return;
+    }
+
+    panel.innerHTML = `
+        <div class="top-dashboard control-kpis">
+            <div class="kpi"><h3>Total clientes</h3><p>${totalClientes}</p></div>
+            <div class="kpi"><h3>Con control</h3><p>${conMediciones}</p></div>
+            <div class="kpi"><h3>Pendientes</h3><p>${sinMediciones}</p></div>
+        </div>
+
+        <div class="card">
+            <div class="table-title-row">
+                <h2>Clientes para seguimiento</h2>
+                <button class="accion accion-inline" onclick="mostrarSubmenuClientes('registro')">Nuevo cliente</button>
+            </div>
+            <div class="control-list">
+                ${clientesFiltrados.map((cliente) => `
+                    <div class="control-client-card">
+                        <div>
+                            <h3>${escapar(cliente.nombre)}</h3>
+                            <p>${escapar(cliente.correo)} · ${escapar(cliente.telefono || 'Sin teléfono')}</p>
+                            <div class="control-meta">
+                                <span class="${Number(cliente.total_mediciones) > 0 ? 'estado-ok' : 'estado-pendiente'}">
+                                    ${Number(cliente.total_mediciones) > 0 ? 'Con mediciones' : 'Sin mediciones'}
+                                </span>
+                                <span>${Number(cliente.total_mediciones || 0)} controles</span>
+                                <span>Último: ${escapar(cliente.ultima_medicion || 'Pendiente')}</span>
+                            </div>
+                        </div>
+                        <div class="control-actions">
+                            <button class="accion accion-inline" onclick="verFichaCliente(${cliente.id})">Abrir ficha</button>
+                            <button class="accion accion-secundaria accion-inline" onclick="verRutinas(${cliente.id})">Rutinas</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
 }
 
 function renderClientes() {

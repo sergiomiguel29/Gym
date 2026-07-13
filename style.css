@@ -834,6 +834,73 @@ th{
     line-height:1.5;
 }
 
+.control-kpis{
+    margin-top:0;
+}
+
+.control-list{
+    display:grid;
+    gap:14px;
+}
+
+.control-client-card{
+    display:flex;
+    justify-content:space-between;
+    gap:18px;
+    align-items:center;
+    padding:18px;
+    border:1px solid #e5e7eb;
+    border-radius:16px;
+    background:#f8fafc;
+}
+
+.control-client-card h3{
+    margin:0 0 6px;
+    color:#111827;
+    font-size:20px;
+}
+
+.control-client-card p{
+    margin:0;
+    color:#64748b;
+}
+
+.control-meta{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:12px;
+}
+
+.control-meta span{
+    padding:6px 10px;
+    border-radius:999px;
+    background:white;
+    border:1px solid #e5e7eb;
+    color:#475569;
+    font-size:12px;
+    font-weight:800;
+}
+
+.control-meta .estado-ok{
+    background:#dcfce7;
+    border-color:#bbf7d0;
+    color:#14532d;
+}
+
+.control-meta .estado-pendiente{
+    background:#fff7ed;
+    border-color:#fed7aa;
+    color:#9a3412;
+}
+
+.control-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+}
+
 .cliente-detail-grid{
     display:grid;
     grid-template-columns:minmax(280px, 360px) 1fr;
@@ -1177,6 +1244,16 @@ th{
     }
 
     .submenu-btn{
+        width:100%;
+    }
+
+    .control-client-card{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .control-actions{
+        justify-content:flex-start;
         width:100%;
     }
 
