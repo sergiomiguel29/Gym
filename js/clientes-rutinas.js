@@ -1,39 +1,77 @@
 ﻿function clientes() {
     document.getElementById('contenido').innerHTML = `
-        <h1 class="titulo-dashboard">Gestión de Clientes</h1>
-
-        <div class="card form-card">
-            <h2>Registrar Cliente</h2>
-            <input type="text" id="cliNombre" placeholder="Nombre completo">
-            <input type="email" id="cliCorreo" placeholder="Correo electrónico">
-            <input type="text" id="cliTelefono" placeholder="Teléfono">
-            <button class="accion" onclick="guardarCliente()">Guardar Cliente</button>
-        </div>
-
-        <div class="card import-card">
-            <h2>Importar Clientes</h2>
-            <p class="muted">Carga varios clientes desde un archivo CSV con las columnas: nombre, correo y teléfono.</p>
-            <div class="import-row">
-                <input type="file" id="archivoClientes" accept=".csv,text/csv">
-                <button class="accion accion-inline" onclick="importarClientesMasivo()">Importar CSV</button>
-                <button class="accion accion-secundaria accion-inline" onclick="descargarPlantillaClientes()">Plantilla</button>
-            </div>
-            <div id="resultadoImportacion" class="import-result"></div>
-        </div>
-
-        <div class="card search-card">
-            <h2>Buscar Cliente</h2>
-            <div class="search-row">
-                <input type="text" id="buscarCliente" placeholder="Buscar por nombre, correo o teléfono" onkeydown="buscarConEnter(event)">
-                <button class="accion accion-inline" onclick="buscarCliente()">Buscar</button>
-                <button class="accion accion-secundaria accion-inline" onclick="limpiarBusqueda()">Limpiar</button>
+        <div class="dashboard-header">
+            <div>
+                <h1 class="titulo-dashboard">Gestión de Clientes</h1>
+                <p class="subtitulo">Administra clientes, rutinas y progreso físico desde un panel ordenado</p>
             </div>
         </div>
 
-        <div class="card">
-            <h2>Lista de Clientes</h2>
-            <div id="tablaClientes"></div>
+        <div class="submenu-clientes">
+            <button class="submenu-btn activo" onclick="mostrarSubmenuClientes('lista', this)">Clientes</button>
+            <button class="submenu-btn" onclick="mostrarSubmenuClientes('registro', this)">Registrar</button>
+            <button class="submenu-btn" onclick="mostrarSubmenuClientes('importar', this)">Importar</button>
+            <button class="submenu-btn" onclick="mostrarSubmenuClientes('control', this)">Control físico</button>
         </div>
+
+        <section id="subClientesLista" class="subclientes-section activo">
+            <div class="card search-card">
+                <h2>Buscar Cliente</h2>
+                <div class="search-row">
+                    <input type="text" id="buscarCliente" placeholder="Buscar por nombre, correo o teléfono" onkeydown="buscarConEnter(event)">
+                    <button class="accion accion-inline" onclick="buscarCliente()">Buscar</button>
+                    <button class="accion accion-secundaria accion-inline" onclick="limpiarBusqueda()">Limpiar</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="table-title-row">
+                    <h2>Lista de Clientes</h2>
+                    <button class="accion accion-inline" onclick="mostrarSubmenuClientes('registro')">Nuevo cliente</button>
+                </div>
+                <div id="tablaClientes"></div>
+            </div>
+        </section>
+
+        <section id="subClientesRegistro" class="subclientes-section">
+            <div class="card form-card">
+                <h2>Registrar Cliente</h2>
+                <input type="text" id="cliNombre" placeholder="Nombre completo">
+                <input type="email" id="cliCorreo" placeholder="Correo electrónico">
+                <input type="text" id="cliTelefono" placeholder="Teléfono">
+                <div class="form-actions-inline">
+                    <button class="accion" onclick="guardarCliente()">Guardar Cliente</button>
+                    <button class="accion accion-secundaria" onclick="mostrarSubmenuClientes('lista')">Volver a lista</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="subClientesImportar" class="subclientes-section">
+            <div class="card import-card">
+                <h2>Importar Clientes</h2>
+                <p class="muted">Carga varios clientes desde un archivo CSV con las columnas: nombre, correo y teléfono.</p>
+                <div class="import-row">
+                    <input type="file" id="archivoClientes" accept=".csv,text/csv">
+                    <button class="accion accion-inline" onclick="importarClientesMasivo()">Importar CSV</button>
+                    <button class="accion accion-secundaria accion-inline" onclick="descargarPlantillaClientes()">Plantilla</button>
+                </div>
+                <div id="resultadoImportacion" class="import-result"></div>
+            </div>
+        </section>
+
+        <section id="subClientesControl" class="subclientes-section">
+            <div class="card">
+                <h2>Control físico y progreso</h2>
+                <p class="muted">Selecciona un cliente de la lista y usa el botón <strong>Ficha</strong> para registrar mediciones, ver antes vs actual e imprimir su seguimiento.</p>
+                <div class="quick-guide-grid">
+                    <div><strong>1. Cliente</strong><span>Primero registra o busca al cliente.</span></div>
+                    <div><strong>2. Ficha</strong><span>Abre su control físico desde la tabla.</span></div>
+                    <div><strong>3. Medición</strong><span>Guarda peso, cintura y medidas por fecha.</span></div>
+                    <div><strong>4. Progreso</strong><span>El sistema compara inicio vs actual.</span></div>
+                </div>
+                <button class="accion" onclick="mostrarSubmenuClientes('lista')">Ir a lista de clientes</button>
+            </div>
+        </section>
 
         <div id="modalEditarCliente" class="modal-overlay" style="display:none;">
             <div class="modal-card modal-card-cliente">
@@ -64,6 +102,28 @@
     cargarClientes();
 }
 
+function mostrarSubmenuClientes(seccion, boton = null) {
+    const mapa = {
+        lista: 'subClientesLista',
+        registro: 'subClientesRegistro',
+        importar: 'subClientesImportar',
+        control: 'subClientesControl',
+    };
+
+    Object.values(mapa).forEach((id) => document.getElementById(id)?.classList.remove('activo'));
+    document.getElementById(mapa[seccion])?.classList.add('activo');
+
+    document.querySelectorAll('.submenu-clientes .submenu-btn').forEach((item) => item.classList.remove('activo'));
+
+    if (boton) {
+        boton.classList.add('activo');
+        return;
+    }
+
+    const orden = ['lista', 'registro', 'importar', 'control'];
+    const index = orden.indexOf(seccion);
+    document.querySelectorAll('.submenu-clientes .submenu-btn')[index]?.classList.add('activo');
+}
 async function guardarCliente() {
     const nombre = document.getElementById('cliNombre').value.trim();
     const correo = document.getElementById('cliCorreo').value.trim();
@@ -81,6 +141,7 @@ async function guardarCliente() {
         document.getElementById('cliNombre').value = '';
         document.getElementById('cliCorreo').value = '';
         document.getElementById('cliTelefono').value = '';
+        mostrarSubmenuClientes('lista');
         cargarClientes();
     }
 }
@@ -1038,3 +1099,4 @@ function crearGraficosEvolucion(filas) {
         options: opciones,
     }));
 }
+

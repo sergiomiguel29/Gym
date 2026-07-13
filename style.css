@@ -768,6 +768,72 @@ th{
     margin-top:8px;
 }
 
+.submenu-clientes{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin:-12px 0 24px;
+    padding:8px;
+    background:#e2e8f0;
+    border:1px solid #cbd5e1;
+    border-radius:16px;
+}
+
+.submenu-btn{
+    border:none;
+    border-radius:12px;
+    padding:12px 18px;
+    background:transparent;
+    color:#334155;
+    font-weight:900;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.submenu-btn:hover{
+    background:#f8fafc;
+    color:#14532d;
+}
+
+.submenu-btn.activo{
+    background:white;
+    color:#14532d;
+    box-shadow:0 8px 18px rgba(15,23,42,.10);
+}
+
+.subclientes-section{
+    display:none;
+}
+
+.subclientes-section.activo{
+    display:block;
+}
+
+.quick-guide-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:14px;
+    margin:20px 0 4px;
+}
+
+.quick-guide-grid div{
+    padding:16px;
+    border-radius:14px;
+    background:#f8fafc;
+    border:1px solid #e5e7eb;
+}
+
+.quick-guide-grid strong{
+    display:block;
+    color:#14532d;
+    margin-bottom:8px;
+}
+
+.quick-guide-grid span{
+    color:#64748b;
+    line-height:1.5;
+}
+
 .cliente-detail-grid{
     display:grid;
     grid-template-columns:minmax(280px, 360px) 1fr;
@@ -1100,8 +1166,18 @@ th{
     .import-row,
     .rutina-grid-form,
     .measurement-grid,
-    .before-after{
+    .before-after,
+    .quick-guide-grid{
         grid-template-columns:1fr;
+    }
+
+    .submenu-clientes{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+    }
+
+    .submenu-btn{
+        width:100%;
     }
 
     .modal-actions{
