@@ -750,6 +750,24 @@ th{
     margin-top:0;
 }
 
+.toolbar-card{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    margin:-4px 0 18px;
+}
+
+.form-actions-inline{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.form-actions-inline .accion{
+    margin-top:8px;
+}
+
 .modal-overlay{
     position:fixed;
     inset:0;
@@ -883,8 +901,44 @@ th{
 }
 
 .rutina-item-head span{
+    display:block;
+    margin-top:4px;
     color:#64748b;
     font-weight:800;
+}
+
+.mini-actions{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    gap:8px;
+}
+
+.mini-actions button{
+    border:none;
+    border-radius:9px;
+    padding:8px 10px;
+    background:#e0f2fe;
+    color:#075985;
+    font-size:12px;
+    font-weight:800;
+    cursor:pointer;
+    transition:.2s;
+}
+
+.mini-actions button:hover{
+    background:#bae6fd;
+    transform:translateY(-1px);
+}
+
+.mini-actions button.danger{
+    background:#fee2e2;
+    color:#991b1b;
+}
+
+.mini-actions button.danger:hover{
+    background:#fecaca;
 }
 
 .ejercicios-lista{
@@ -894,6 +948,7 @@ th{
 
 .ejercicio-chip{
     display:flex;
+    align-items:center;
     justify-content:space-between;
     gap:12px;
     padding:10px 12px;
@@ -908,6 +963,8 @@ th{
 
 .ejercicio-chip span,
 .muted{
+    display:block;
+    margin-top:3px;
     color:#64748b;
 }
 

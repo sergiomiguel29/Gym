@@ -64,6 +64,52 @@ if ($accion === 'listar') {
     ]);
 }
 
+if ($accion === 'editar') {
+    $idEjercicio = (int) ($_POST['idEjercicio'] ?? 0);
+    $ejercicio = post_value('ejercicio');
+    $series = (int) ($_POST['series'] ?? 0);
+    $reps = (int) ($_POST['reps'] ?? 0);
+    $peso = (float) ($_POST['peso'] ?? 0);
+
+    if ($idEjercicio <= 0 || $ejercicio === '' || $series <= 0 || $reps <= 0) {
+        json_response([
+            'ok' => false,
+            'message' => 'Completa ejercicio, series y repeticiones.',
+        ], 422);
+    }
+
+    $stmt = $conn->prepare(
+        'UPDATE ejercicios SET tipo_ejercicio = ?, series = ?, repeticiones = ?, peso = ? WHERE id = ?'
+    );
+    $stmt->bind_param('siidi', $ejercicio, $series, $reps, $peso, $idEjercicio);
+    $stmt->execute();
+
+    json_response([
+        'ok' => true,
+        'message' => 'Ejercicio actualizado correctamente.',
+    ]);
+}
+
+if ($accion === 'eliminar') {
+    $idEjercicio = (int) ($_POST['idEjercicio'] ?? 0);
+
+    if ($idEjercicio <= 0) {
+        json_response([
+            'ok' => false,
+            'message' => 'Ejercicio inválido.',
+        ], 422);
+    }
+
+    $stmt = $conn->prepare('DELETE FROM ejercicios WHERE id = ?');
+    $stmt->bind_param('i', $idEjercicio);
+    $stmt->execute();
+
+    json_response([
+        'ok' => true,
+        'message' => 'Ejercicio eliminado correctamente.',
+    ]);
+}
+
 json_response([
     'ok' => false,
     'message' => 'Acción no válida.',

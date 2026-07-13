@@ -57,6 +57,47 @@ if ($accion === 'listarRutinas') {
     ]);
 }
 
+if ($accion === 'editarRutina') {
+    $idRutina = (int) ($_POST['idRutina'] ?? 0);
+    $semana = post_value('semana');
+
+    if ($idRutina <= 0 || $semana === '') {
+        json_response([
+            'ok' => false,
+            'message' => 'Datos inválidos para actualizar la rutina.',
+        ], 422);
+    }
+
+    $stmt = $conn->prepare('UPDATE rutinas SET dia_semana = ? WHERE id = ?');
+    $stmt->bind_param('si', $semana, $idRutina);
+    $stmt->execute();
+
+    json_response([
+        'ok' => true,
+        'message' => 'Rutina actualizada correctamente.',
+    ]);
+}
+
+if ($accion === 'eliminarRutina') {
+    $idRutina = (int) ($_POST['idRutina'] ?? 0);
+
+    if ($idRutina <= 0) {
+        json_response([
+            'ok' => false,
+            'message' => 'Rutina inválida.',
+        ], 422);
+    }
+
+    $stmt = $conn->prepare('DELETE FROM rutinas WHERE id = ?');
+    $stmt->bind_param('i', $idRutina);
+    $stmt->execute();
+
+    json_response([
+        'ok' => true,
+        'message' => 'Rutina eliminada correctamente.',
+    ]);
+}
+
 if ($accion === 'evolucionCliente') {
     $idCliente = (int) ($_GET['idCliente'] ?? 0);
 

@@ -2,6 +2,8 @@
 let charts = [];
 let clienteCharts = [];
 let clientesCache = [];
+let rutinasCache = [];
+let ejerciciosCache = {};
 
 const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const clientesMes = [25, 9, 15, 6, 8, 26, 10, 14, 10, 7, 8, 28];

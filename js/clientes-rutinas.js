@@ -266,7 +266,10 @@ function verRutinas(id) {
                     <p class="subtitulo">Registra lo trabajado por día de entrenamiento</p>
                 </div>
             </div>
-            <button class="accion accion-secundaria" onclick="clientes()">Volver a clientes</button>
+            <div class="acciones-header">
+                <button class="accion accion-secundaria" onclick="clientes()">Volver a clientes</button>
+                <button class="accion accion-secundaria" onclick="verEvolucionCliente(${id})">Ver evolución</button>
+            </div>
         </div>
 
         <div class="rutina-layout">
@@ -305,13 +308,56 @@ function verRutinas(id) {
                         <input type="number" id="ejercicioPeso" min="0" step="0.5" value="0">
                     </div>
                 </div>
-                <button class="accion" onclick="agregarEjercicioRutina(${id})">Guardar ejercicio</button>
+                <div class="form-actions-inline">
+                    <button class="accion" onclick="agregarEjercicioRutina(${id})">Guardar ejercicio</button>
+                    <button class="accion accion-secundaria" onclick="limpiarFormularioEjercicio()">Limpiar</button>
+                </div>
             </div>
         </div>
 
         <div class="card">
             <h2>Rutinas guardadas</h2>
+            <div class="toolbar-card">
+                <button class="accion accion-inline" onclick="cargarRutinas(${id})">Actualizar lista</button>
+                <button class="accion accion-secundaria accion-inline" onclick="verEvolucionCliente(${id})">Ver análisis</button>
+            </div>
             <div id="rutinasCliente">Cargando...</div>
+        </div>
+
+        <div id="modalEditarEjercicio" class="modal-overlay" style="display:none;">
+            <div class="modal-card modal-card-cliente">
+                <div class="modal-header modal-header-green">
+                    <div>
+                        <h2>Editar Ejercicio</h2>
+                        <p>Corrige el ejercicio sin borrar toda la rutina.</p>
+                    </div>
+                    <button class="modal-close" onclick="cerrarModalEjercicio()">×</button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editEjercicioId">
+                    <input type="hidden" id="editEjercicioRutinaId">
+                    <label>Ejercicio realizado</label>
+                    <input type="text" id="editEjercicioNombre" placeholder="Ejemplo: Press banca">
+                    <div class="rutina-grid-form">
+                        <div>
+                            <label>Series</label>
+                            <input type="number" id="editEjercicioSeries" min="1">
+                        </div>
+                        <div>
+                            <label>Reps</label>
+                            <input type="number" id="editEjercicioReps" min="1">
+                        </div>
+                        <div>
+                            <label>Peso kg</label>
+                            <input type="number" id="editEjercicioPeso" min="0" step="0.5">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="accion accion-secundaria" onclick="cerrarModalEjercicio()">Cancelar</button>
+                    <button class="accion" onclick="guardarEdicionEjercicio(${id})">Guardar cambios</button>
+                </div>
+            </div>
         </div>
     `;
     cargarRutinas(id);
@@ -341,10 +387,11 @@ async function cargarRutinas(idCliente) {
         return;
     }
 
+    rutinasCache = data.data;
     const select = document.getElementById('selectRutina');
     if (select) {
         select.innerHTML = data.data.length
-            ? data.data.map((rutina) => `<option value="${rutina.id}">${escapar(rutina.semana)} - rutina #${rutina.id}</option>`).join('')
+            ? data.data.map((rutina) => `<option value="${rutina.id}">${escapar(rutina.semana)} - ${escapar(rutina.fecha)} · rutina #${rutina.id}</option>`).join('')
             : '<option value="">Primero crea una rutina</option>';
     }
 
@@ -352,8 +399,15 @@ async function cargarRutinas(idCliente) {
         ? data.data.map((rutina) => `
             <div class="rutina-item">
                 <div class="rutina-item-head">
-                    <strong>${escapar(rutina.semana)}</strong>
-                    <span>Rutina #${rutina.id}</span>
+                    <div>
+                        <strong>${escapar(rutina.semana)}</strong>
+                        <span>${escapar(rutina.fecha)} · Rutina #${rutina.id}</span>
+                    </div>
+                    <div class="mini-actions">
+                        <button onclick="seleccionarRutina(${rutina.id})">Usar</button>
+                        <button onclick="editarRutina(${idCliente}, ${rutina.id})">Editar</button>
+                        <button class="danger" onclick="eliminarRutina(${idCliente}, ${rutina.id})">Eliminar</button>
+                    </div>
                 </div>
                 <div class="ejercicios-lista" id="ejercicios-rutina-${rutina.id}">Cargando ejercicios...</div>
             </div>
@@ -361,6 +415,52 @@ async function cargarRutinas(idCliente) {
         : '<p>No hay rutinas guardadas para este cliente.</p>';
 
     data.data.forEach((rutina) => cargarEjerciciosRutina(rutina.id));
+}
+
+function seleccionarRutina(idRutina) {
+    const select = document.getElementById('selectRutina');
+    if (select) select.value = idRutina;
+    document.getElementById('ejercicioNombre')?.focus();
+}
+
+async function editarRutina(idCliente, idRutina) {
+    const rutina = rutinasCache.find((item) => item.id === idRutina);
+    const nuevoDia = prompt('Nuevo día de entrenamiento:', rutina?.semana || '');
+
+    if (nuevoDia === null) return;
+    if (!nuevoDia.trim()) {
+        alert('El día de entrenamiento no puede estar vacío.');
+        return;
+    }
+
+    const data = await api('php/rutinas.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encodeForm({ accion: 'editarRutina', idRutina, semana: nuevoDia.trim() }),
+    });
+
+    alert(data.message);
+    if (data.ok) cargarRutinas(idCliente);
+}
+
+async function eliminarRutina(idCliente, idRutina) {
+    if (!confirm('¿Eliminar esta rutina y todos sus ejercicios?')) return;
+
+    const data = await api('php/rutinas.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encodeForm({ accion: 'eliminarRutina', idRutina }),
+    });
+
+    alert(data.message);
+    if (data.ok) cargarRutinas(idCliente);
+}
+
+function limpiarFormularioEjercicio() {
+    document.getElementById('ejercicioNombre').value = '';
+    document.getElementById('ejercicioSeries').value = 3;
+    document.getElementById('ejercicioReps').value = 12;
+    document.getElementById('ejercicioPeso').value = 0;
 }
 
 async function agregarEjercicioRutina(idCliente) {
@@ -389,7 +489,7 @@ async function agregarEjercicioRutina(idCliente) {
     alert(data.message);
 
     if (data.ok) {
-        document.getElementById('ejercicioNombre').value = '';
+        limpiarFormularioEjercicio();
         cargarRutinas(idCliente);
     }
 }
@@ -405,14 +505,81 @@ async function cargarEjerciciosRutina(idRutina) {
         return;
     }
 
+    ejerciciosCache[idRutina] = data.data;
+
     contenedor.innerHTML = data.data.length
         ? data.data.map((item) => `
             <div class="ejercicio-chip">
-                <strong>${escapar(item.ejercicio)}</strong>
-                <span>${item.series}x${item.reps} · ${item.peso} kg</span>
+                <div>
+                    <strong>${escapar(item.ejercicio)}</strong>
+                    <span>${item.series}x${item.reps} · ${item.peso} kg</span>
+                </div>
+                <div class="mini-actions">
+                    <button onclick="abrirEditarEjercicio(${idRutina}, ${item.id})">Editar</button>
+                    <button class="danger" onclick="eliminarEjercicio(${idRutina}, ${item.id})">Eliminar</button>
+                </div>
             </div>
         `).join('')
         : '<p class="muted">Sin ejercicios todavía.</p>';
+}
+
+function abrirEditarEjercicio(idRutina, idEjercicio) {
+    const ejercicio = (ejerciciosCache[idRutina] || []).find((item) => item.id === idEjercicio);
+
+    if (!ejercicio) {
+        alert('Ejercicio no encontrado.');
+        return;
+    }
+
+    document.getElementById('editEjercicioId').value = ejercicio.id;
+    document.getElementById('editEjercicioRutinaId').value = idRutina;
+    document.getElementById('editEjercicioNombre').value = ejercicio.ejercicio;
+    document.getElementById('editEjercicioSeries').value = ejercicio.series;
+    document.getElementById('editEjercicioReps').value = ejercicio.reps;
+    document.getElementById('editEjercicioPeso').value = ejercicio.peso;
+    document.getElementById('modalEditarEjercicio').style.display = 'flex';
+}
+
+function cerrarModalEjercicio() {
+    document.getElementById('modalEditarEjercicio').style.display = 'none';
+}
+
+async function guardarEdicionEjercicio(idCliente) {
+    const idEjercicio = document.getElementById('editEjercicioId').value;
+    const ejercicio = document.getElementById('editEjercicioNombre').value.trim();
+    const series = document.getElementById('editEjercicioSeries').value;
+    const reps = document.getElementById('editEjercicioReps').value;
+    const peso = document.getElementById('editEjercicioPeso').value;
+
+    if (!ejercicio || Number(series) <= 0 || Number(reps) <= 0) {
+        alert('Completa ejercicio, series y repeticiones.');
+        return;
+    }
+
+    const data = await api('php/ejercicios.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encodeForm({ accion: 'editar', idEjercicio, ejercicio, series, reps, peso }),
+    });
+
+    alert(data.message);
+    if (data.ok) {
+        cerrarModalEjercicio();
+        cargarRutinas(idCliente);
+    }
+}
+
+async function eliminarEjercicio(idRutina, idEjercicio) {
+    if (!confirm('¿Eliminar este ejercicio?')) return;
+
+    const data = await api('php/ejercicios.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encodeForm({ accion: 'eliminar', idEjercicio }),
+    });
+
+    alert(data.message);
+    if (data.ok) cargarEjerciciosRutina(idRutina);
 }
 
 async function verEvolucionCliente(id) {
