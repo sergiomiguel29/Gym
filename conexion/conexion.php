@@ -1,11 +1,14 @@
 <?php
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
-$host = getenv('DB_HOST') ?: 'localhost';
-$usuario = getenv('DB_USER') ?: 'root';
-$password = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : '';
-$bd = getenv('DB_NAME') ?: 'gimnasio';
-$puerto = (int) (getenv('DB_PORT') ?: 3306);
+$hostingConfig = __DIR__ . '/hosting_config.php';
+$hosting = file_exists($hostingConfig) ? require $hostingConfig : [];
+
+$host = $hosting['DB_HOST'] ?? getenv('DB_HOST') ?: 'localhost';
+$usuario = $hosting['DB_USER'] ?? getenv('DB_USER') ?: 'root';
+$password = $hosting['DB_PASSWORD'] ?? (getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : '');
+$bd = $hosting['DB_NAME'] ?? getenv('DB_NAME') ?: 'gimnasio';
+$puerto = (int) ($hosting['DB_PORT'] ?? getenv('DB_PORT') ?: 3306);
 
 try {
     $conn = new mysqli($host, $usuario, $password, $bd, $puerto);

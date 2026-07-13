@@ -1,4 +1,5 @@
 .env
+conexion/hosting_config.php
 *.log
 *.zip
 node_modules/
