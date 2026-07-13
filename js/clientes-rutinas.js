@@ -186,6 +186,7 @@ function renderClientes() {
                         <td>${escapar(cliente.correo)}</td>
                         <td>${escapar(cliente.telefono)}</td>
                         <td class="acciones-tabla">
+                            <button onclick="verFichaCliente(${cliente.id})">Ficha</button>
                             <button onclick="editarCliente(${cliente.id})">Editar</button>
                             <button onclick="eliminarCliente(${cliente.id})">Eliminar</button>
                             <button onclick="verRutinas(${cliente.id})">Rutinas</button>
@@ -253,6 +254,319 @@ async function guardarEdicionCliente() {
         cerrarModalEditar();
         cargarClientes();
     }
+}
+
+function verFichaCliente(id) {
+    const cliente = clientesCache.find((item) => item.id === id);
+
+    document.getElementById('contenido').innerHTML = `
+        <div class="dashboard-header">
+            <div class="brand-heading">
+                <img class="brand-mark" src="img/logo-devioz.png" alt="Logo Devioz">
+                <div>
+                    <h1 class="titulo-dashboard">Ficha de ${escapar(cliente?.nombre || 'cliente')}</h1>
+                    <p class="subtitulo">Control inicial, progreso actual y seguimiento corporal</p>
+                </div>
+            </div>
+            <div class="acciones-header">
+                <button class="accion accion-secundaria" onclick="clientes()">Volver a clientes</button>
+                <button class="accion accion-secundaria" onclick="verRutinas(${id})">Rutinas</button>
+                <button class="accion" onclick="window.print()">Imprimir ficha</button>
+            </div>
+        </div>
+
+        <div class="cliente-detail-grid">
+            <div class="card cliente-profile-card">
+                <h2>Datos del cliente</h2>
+                <div class="profile-line"><span>Nombre</span><strong>${escapar(cliente?.nombre || '-')}</strong></div>
+                <div class="profile-line"><span>Correo</span><strong>${escapar(cliente?.correo || '-')}</strong></div>
+                <div class="profile-line"><span>Teléfono</span><strong>${escapar(cliente?.telefono || '-')}</strong></div>
+            </div>
+
+            <div class="card measurement-card">
+                <h2>Nueva medición</h2>
+                <input type="hidden" id="medicionId">
+                <label>Fecha</label>
+                <input type="date" id="medFecha" value="${new Date().toISOString().slice(0, 10)}">
+                <div class="measurement-grid">
+                    <div><label>Peso kg</label><input type="number" id="medPeso" step="0.1" min="0"></div>
+                    <div><label>Cintura cm</label><input type="number" id="medCintura" step="0.1" min="0"></div>
+                    <div><label>Pecho cm</label><input type="number" id="medPecho" step="0.1" min="0"></div>
+                    <div><label>Brazo cm</label><input type="number" id="medBrazo" step="0.1" min="0"></div>
+                    <div><label>Pierna cm</label><input type="number" id="medPierna" step="0.1" min="0"></div>
+                    <div><label>Grasa %</label><input type="number" id="medGrasa" step="0.1" min="0"></div>
+                </div>
+                <label>Observación</label>
+                <input type="text" id="medNotas" placeholder="Ejemplo: inicio de plan, mejora de fuerza, control mensual">
+                <div class="form-actions-inline">
+                    <button class="accion" onclick="guardarMedicion(${id})" id="btnGuardarMedicion">Guardar medición</button>
+                    <button class="accion accion-secundaria" onclick="limpiarFormularioMedicion()">Limpiar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="top-dashboard progress-kpis">
+            <div class="kpi"><h3>Mediciones</h3><p id="kpiMediciones">0</p></div>
+            <div class="kpi"><h3>Peso inicial</h3><p id="kpiPesoInicial">-</p></div>
+            <div class="kpi"><h3>Peso actual</h3><p id="kpiPesoActual">-</p></div>
+            <div class="kpi"><h3>Cambio peso</h3><p id="kpiCambioPeso">-</p></div>
+            <div class="kpi"><h3>Cambio cintura</h3><p id="kpiCambioCintura">-</p></div>
+        </div>
+
+        <div class="charts-grid evolucion-grid">
+            <div class="chart-card"><h2>Antes vs actual</h2><canvas id="graficoMedicionesCliente"></canvas></div>
+            <div class="card progreso-resumen">
+                <h2>Lectura rápida</h2>
+                <div id="lecturaProgreso">Cargando progreso...</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="table-title-row">
+                <h2>Historial de mediciones</h2>
+                <button class="accion accion-inline" onclick="cargarMediciones(${id})">Actualizar</button>
+            </div>
+            <div id="tablaMediciones">Cargando...</div>
+        </div>
+    `;
+
+    cargarMediciones(id);
+}
+
+function valorMedicion(id) {
+    const value = document.getElementById(id).value.trim();
+    return value === '' ? '' : value;
+}
+
+async function guardarMedicion(idCliente) {
+    const id = document.getElementById('medicionId').value;
+    const accion = id ? 'editar' : 'guardar';
+    const payload = {
+        accion,
+        cliente_id: idCliente,
+        id,
+        fecha: document.getElementById('medFecha').value,
+        peso: valorMedicion('medPeso'),
+        cintura: valorMedicion('medCintura'),
+        pecho: valorMedicion('medPecho'),
+        brazo: valorMedicion('medBrazo'),
+        pierna: valorMedicion('medPierna'),
+        grasa: valorMedicion('medGrasa'),
+        notas: document.getElementById('medNotas').value.trim(),
+    };
+
+    if (!payload.fecha) {
+        alert('Selecciona la fecha de medición.');
+        return;
+    }
+
+    const data = await api('php/mediciones.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encodeForm(payload),
+    });
+
+    alert(data.message);
+    if (data.ok) {
+        limpiarFormularioMedicion();
+        cargarMediciones(idCliente);
+    }
+}
+
+function limpiarFormularioMedicion() {
+    document.getElementById('medicionId').value = '';
+    document.getElementById('medFecha').value = new Date().toISOString().slice(0, 10);
+    ['medPeso', 'medCintura', 'medPecho', 'medBrazo', 'medPierna', 'medGrasa', 'medNotas'].forEach((id) => {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('btnGuardarMedicion').innerText = 'Guardar medición';
+}
+
+async function cargarMediciones(idCliente) {
+    const data = await api(`php/mediciones.php?accion=listar&cliente_id=${encodeURIComponent(idCliente)}`);
+
+    if (!data.ok) {
+        document.getElementById('tablaMediciones').innerHTML = `<p>${escapar(data.message)}</p>`;
+        return;
+    }
+
+    medicionesCache = data.data;
+    renderMediciones(idCliente);
+    renderResumenMediciones();
+    renderGraficoMediciones();
+}
+
+function renderMediciones(idCliente) {
+    const contenedor = document.getElementById('tablaMediciones');
+
+    if (!medicionesCache.length) {
+        contenedor.innerHTML = '<p>No hay mediciones todavía. Registra una medición inicial para comparar el progreso.</p>';
+        return;
+    }
+
+    contenedor.innerHTML = `
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Peso</th>
+                    <th>Cintura</th>
+                    <th>Pecho</th>
+                    <th>Brazo</th>
+                    <th>Pierna</th>
+                    <th>Grasa</th>
+                    <th>Notas</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${medicionesCache.map((item) => `
+                    <tr>
+                        <td>${escapar(item.fecha)}</td>
+                        <td>${formatoMedida(item.peso, 'kg')}</td>
+                        <td>${formatoMedida(item.cintura, 'cm')}</td>
+                        <td>${formatoMedida(item.pecho, 'cm')}</td>
+                        <td>${formatoMedida(item.brazo, 'cm')}</td>
+                        <td>${formatoMedida(item.pierna, 'cm')}</td>
+                        <td>${formatoMedida(item.grasa, '%')}</td>
+                        <td>${escapar(item.notas || '-')}</td>
+                        <td class="acciones-tabla">
+                            <button onclick="editarMedicion(${item.id})">Editar</button>
+                            <button onclick="eliminarMedicion(${idCliente}, ${item.id})">Eliminar</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function formatoMedida(valor, unidad) {
+    return valor === null || valor === undefined ? '-' : `${Number(valor).toLocaleString('es-PE')} ${unidad}`;
+}
+
+function diferenciaMedida(inicial, actual, unidad) {
+    if (inicial === null || actual === null || inicial === undefined || actual === undefined) return '-';
+    const diff = Number(actual) - Number(inicial);
+    const signo = diff > 0 ? '+' : '';
+    return `${signo}${diff.toFixed(1)} ${unidad}`;
+}
+
+function renderResumenMediciones() {
+    const inicial = medicionesCache[0] || null;
+    const actual = medicionesCache[medicionesCache.length - 1] || null;
+
+    document.getElementById('kpiMediciones').innerText = medicionesCache.length;
+    document.getElementById('kpiPesoInicial').innerText = inicial ? formatoMedida(inicial.peso, 'kg') : '-';
+    document.getElementById('kpiPesoActual').innerText = actual ? formatoMedida(actual.peso, 'kg') : '-';
+    document.getElementById('kpiCambioPeso').innerText = inicial && actual ? diferenciaMedida(inicial.peso, actual.peso, 'kg') : '-';
+    document.getElementById('kpiCambioCintura').innerText = inicial && actual ? diferenciaMedida(inicial.cintura, actual.cintura, 'cm') : '-';
+
+    const lectura = document.getElementById('lecturaProgreso');
+    if (!inicial || !actual || medicionesCache.length < 2) {
+        lectura.innerHTML = '<p>Registra al menos dos mediciones para mostrar una comparación de antes y después.</p>';
+        return;
+    }
+
+    lectura.innerHTML = `
+        <div class="before-after">
+            <div>
+                <span>Antes</span>
+                <strong>${escapar(inicial.fecha)}</strong>
+                <p>Peso: ${formatoMedida(inicial.peso, 'kg')}</p>
+                <p>Cintura: ${formatoMedida(inicial.cintura, 'cm')}</p>
+                <p>Grasa: ${formatoMedida(inicial.grasa, '%')}</p>
+            </div>
+            <div>
+                <span>Actual</span>
+                <strong>${escapar(actual.fecha)}</strong>
+                <p>Peso: ${formatoMedida(actual.peso, 'kg')}</p>
+                <p>Cintura: ${formatoMedida(actual.cintura, 'cm')}</p>
+                <p>Grasa: ${formatoMedida(actual.grasa, '%')}</p>
+            </div>
+        </div>
+        <p class="muted">El progreso se calcula comparando la primera medición registrada contra la última.</p>
+    `;
+}
+
+function renderGraficoMediciones() {
+    if (medicionesChart) medicionesChart.destroy();
+
+    const canvas = document.getElementById('graficoMedicionesCliente');
+    if (!canvas) return;
+
+    medicionesChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: medicionesCache.map((item) => item.fecha),
+            datasets: [
+                {
+                    label: 'Peso kg',
+                    data: medicionesCache.map((item) => item.peso),
+                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22,163,74,.15)',
+                    fill: true,
+                    tension: .35,
+                },
+                {
+                    label: 'Cintura cm',
+                    data: medicionesCache.map((item) => item.cintura),
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37,99,235,.12)',
+                    fill: true,
+                    tension: .35,
+                },
+                {
+                    label: 'Grasa %',
+                    data: medicionesCache.map((item) => item.grasa),
+                    borderColor: '#f97316',
+                    backgroundColor: 'rgba(249,115,22,.12)',
+                    fill: true,
+                    tension: .35,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: false },
+            },
+        },
+    });
+}
+
+function editarMedicion(id) {
+    const item = medicionesCache.find((medicion) => medicion.id === id);
+    if (!item) {
+        alert('Medición no encontrada.');
+        return;
+    }
+
+    document.getElementById('medicionId').value = item.id;
+    document.getElementById('medFecha').value = item.fecha;
+    document.getElementById('medPeso').value = item.peso ?? '';
+    document.getElementById('medCintura').value = item.cintura ?? '';
+    document.getElementById('medPecho').value = item.pecho ?? '';
+    document.getElementById('medBrazo').value = item.brazo ?? '';
+    document.getElementById('medPierna').value = item.pierna ?? '';
+    document.getElementById('medGrasa').value = item.grasa ?? '';
+    document.getElementById('medNotas').value = item.notas ?? '';
+    document.getElementById('btnGuardarMedicion').innerText = 'Actualizar medición';
+    document.getElementById('medFecha').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function eliminarMedicion(idCliente, id) {
+    if (!confirm('¿Eliminar esta medición?')) return;
+
+    const data = await api('php/mediciones.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: encodeForm({ accion: 'eliminar', id }),
+    });
+
+    alert(data.message);
+    if (data.ok) cargarMediciones(idCliente);
 }
 
 function verRutinas(id) {

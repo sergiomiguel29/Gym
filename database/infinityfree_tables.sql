@@ -53,3 +53,23 @@ CREATE TABLE IF NOT EXISTS ejercicios (
     ON UPDATE CASCADE
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS mediciones (
+  id INT(11) NOT NULL AUTO_INCREMENT,
+  cliente_id INT(11) NOT NULL,
+  fecha DATE NOT NULL,
+  peso DECIMAL(5,2) DEFAULT NULL,
+  cintura DECIMAL(5,2) DEFAULT NULL,
+  pecho DECIMAL(5,2) DEFAULT NULL,
+  brazo DECIMAL(5,2) DEFAULT NULL,
+  pierna DECIMAL(5,2) DEFAULT NULL,
+  grasa DECIMAL(5,2) DEFAULT NULL,
+  notas VARCHAR(255) DEFAULT NULL,
+  fecha_registro TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_mediciones_cliente_id (cliente_id),
+  CONSTRAINT fk_mediciones_clientes
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
